@@ -1,17 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { nanoid } from "nanoid";
 
 const prisma = new PrismaClient();
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   const { url } = await req.json();
+  if (!url) return NextResponse.json({ error: "URL required" }, { status: 400 });
 
-  const slug = nanoid(6);
+  const slug = Math.random().toString(36).substring(2, 8);
+  await prisma.shortLink.create({ data: { slug, url } });
 
-  const newLink = await prisma.shortLink.create({
-    data: { url, slug }
-  });
-
-  return NextResponse.json({ shortUrl: slug });
+  return NextResponse.json({ shortUrl: `http://localhost:3000/s/${slug}` });
 }
